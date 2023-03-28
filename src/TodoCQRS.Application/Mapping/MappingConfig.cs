@@ -1,4 +1,3 @@
-using System.Reflection;
 using Mapster;
 using TodoCQRS.Application.DTOs;
 using TodoCQRS.Domain.Entities;
@@ -22,7 +21,5 @@ public static class MappingConfig
             .Map(dest => dest.Description, src => src.Description)
             .Map(dest => dest.IsCompleted, src => src.IsCompleted)
             .Map(dest => dest.CreatedAt, src => src.CreatedAt);
-
-        TypeAdapterConfig.GlobalSettings.Scan(Assembly.GetExecutingAssembly());
     }
 }

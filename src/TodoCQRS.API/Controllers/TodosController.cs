@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using TodoCQRS.Application.Commands;
+using TodoCQRS.Application.DTOs;
 using TodoCQRS.Application.Queries;
-using TodoCQRS.Domain.Entities;
 
 namespace TodoCQRS.API.Controllers;
 
@@ -18,21 +18,21 @@ public class TodosController : Controller
     }
 
     [HttpPost]
-    public async Task<ActionResult<Todo>> CreateTodo(CreateTodoCommand command)
+    public async Task<ActionResult<TodoDto>> CreateTodo(CreateTodoCommand command)
     {
         var todo = await _mediator.Send(command);
         return CreatedAtAction(nameof(GetTodoById), new { id = todo.Id }, todo);
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<Todo>> GetTodoById(Guid id)
+    public async Task<ActionResult<TodoDto>> GetTodoById(Guid id)
     {
         var todo = await _mediator.Send(new GetTodoByIdQuery(id));
         return Ok(todo);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Todo>>> GetTodos()
+    public async Task<ActionResult<IEnumerable<TodoDto>>> GetTodos()
     {
         var todos = await _mediator.Send(new GetTodosQuery());
         return Ok(todos);
@@ -55,21 +55,21 @@ public class TodosController : Controller
     }
 
     [HttpGet("pending")]
-    public async Task<ActionResult<IEnumerable<Todo>>> GetPendingTodos()
+    public async Task<ActionResult<IEnumerable<TodoDto>>> GetPendingTodos()
     {
         var todos = await _mediator.Send(new GetPendingTodosQuery());
         return Ok(todos);
     }
 
     [HttpGet("completed")]
-    public async Task<ActionResult<IEnumerable<Todo>>> GetCompletedTodos()
+    public async Task<ActionResult<IEnumerable<TodoDto>>> GetCompletedTodos()
     {
         var todos = await _mediator.Send(new GetCompletedTodosQuery());
         return Ok(todos);
     }
 
     [HttpPatch("{id:guid}/toggle-status")]
-    public async Task<ActionResult<Todo>> ToggleTodoStatus(Guid id)
+    public async Task<ActionResult<TodoDto>> ToggleTodoStatus(Guid id)
     {
         var todo = await _mediator.Send(new ToggleTodoStatusCommand(id));
         return Ok(todo);
