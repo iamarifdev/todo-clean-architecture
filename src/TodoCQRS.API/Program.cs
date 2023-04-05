@@ -21,9 +21,18 @@ builder.Host.UseSerilog();
 
 // Configure services
 MappingConfig.Configure();
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.MigrationsAssembly("TodoCQRS.Infrastructure")));
+
+if (builder.Environment.IsEnvironment("Test"))
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseInMemoryDatabase("TodoTestDb"));
+else
+    builder.Services.AddDbContext<ApplicationDbContext>(
+        options => options.UseSqlite(
+            builder.Configuration.GetConnectionString(nameof(ApplicationDbContext)),
+            x => x.MigrationsAssembly("TodoCQRS.Infrastructure")
+        )
+    );
+
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateTodoCommandHandler).Assembly));
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 
@@ -34,6 +43,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+MigrateDatabase();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -49,3 +60,12 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+void MigrateDatabase()
+{
+    if (app.Environment.IsEnvironment("Test")) return;
+
+    using var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope();
+    using var context = serviceScope.ServiceProvider.GetService<ApplicationDbContext>();
+    context!.Database.Migrate();
+}

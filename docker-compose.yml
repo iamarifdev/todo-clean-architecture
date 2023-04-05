@@ -1,23 +1,25 @@
 version: "3.9"
 
 services:
-#  app:
-#    build: .
-#    depends_on:
-#      - db
-#    ports:
-#      - "8000:80"
-
-  db:
-    image: "mcr.microsoft.com/azure-sql-edge"
-    volumes:
-      - todo_mssql:/var/opt/mssql
-    environment:
-      - ACCEPT_EULA=1
-      - MSSQL_SA_PASSWORD=Admin1234@
+  api:
+    build:
+      context: .
+      dockerfile: src/TodoCQRS.API/Dockerfile
+    image: "arifjmamun/todo-cqrs-api"
+    container_name: "todo-cqrs-api"
     ports:
-      - "1433:1433"
-  
+      - "${HTTP_PORT}:80"
+      - "${HTTPS_PORT}:443"
+    environment: # defined for run.sh to access the ports
+      - HTTP_PORT=${HTTP_PORT}
+      - HTTPS_PORT=${HTTPS_PORT}
+    env_file:
+      - src/TodoCQRS.API/list.env
+    volumes:
+      - ~/.aspnet/https:/https:ro
+      - todo-db-data:/app/Data
+      - ./src/TodoCQRS.API/run.sh:/app/run.sh:ro
+    entrypoint: ["/bin/sh", "/app/run.sh"]
+
 volumes:
-  todo_mssql:
-     
+  todo-db-data:

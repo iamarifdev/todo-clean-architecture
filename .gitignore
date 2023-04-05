@@ -47,3 +47,8 @@ msbuild.wrn
 *.db
 *.db-shm
 *.db-wal
+
+# ignore list.env
+src/TodoCQRS.API/list.env
+!src/TodoCQRS.API/list.env.example
+
